@@ -4,15 +4,19 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 type testObject struct {
-	ID   string
-	Name string
+	ID        string
+	Name      string
+	CreatedAt time.Time
+	Nonce     uint64
 }
 
 func (obj *testObject) Marshal() ([]byte, error) {
@@ -27,36 +31,52 @@ func (obj *testObject) New() Object {
 
 var testObjects = map[string]*testObject{
 	"foo": &testObject{
-		ID:   "foo",
-		Name: "Foo",
+		ID:        "foo",
+		Name:      "Foo",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"bar": &testObject{
-		ID:   "bar",
-		Name: "Bar",
+		ID:        "bar",
+		Name:      "Bar",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"base": &testObject{
-		ID:   "base",
-		Name: "Base",
+		ID:        "base",
+		Name:      "Base",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"cow": &testObject{
-		ID:   "cow",
-		Name: "Cow",
+		ID:        "cow",
+		Name:      "Cow",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"dog": &testObject{
-		ID:   "dog",
-		Name: "Dog",
+		ID:        "dog",
+		Name:      "Dog",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"elephant": &testObject{
-		ID:   "elephant",
-		Name: "Elephant",
+		ID:        "elephant",
+		Name:      "Elephant",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"fox": &testObject{
-		ID:   "fox",
-		Name: "Fox",
+		ID:        "fox",
+		Name:      "Fox",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 	"goat": &testObject{
-		ID:   "goat",
-		Name: "Goat",
+		ID:        "goat",
+		Name:      "Goat",
+		CreatedAt: time.Now(),
+		Nonce:     rand.Uint64(),
 	},
 }
 

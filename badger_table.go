@@ -32,14 +32,15 @@ func (t *badgerTable) Create(id []byte, obj Object) error {
 
 func (t *badgerTable) Get(id []byte) (Object, error) {
 	key := t.getOpaqueKey(id)
-	fmt.Printf("GET %q\n", key)
+	fmt.Printf("READ %q\n", key)
 	obj := t.obj.New()
 
 	err := t.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(key)
 		if err != nil {
-			return err
+			return translateError(err)
 		}
+
 		val, err := item.Value()
 		if err != nil {
 			return err
@@ -52,7 +53,7 @@ func (t *badgerTable) Get(id []byte) (Object, error) {
 
 func (t *badgerTable) Update(id []byte, obj Object) error {
 	key := t.getOpaqueKey(id)
-
+	fmt.Printf("UPDATE %q\n", key)
 	val, err := obj.Marshal()
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (t *badgerTable) Update(id []byte, obj Object) error {
 	return t.db.Update(func(txn *badger.Txn) error {
 		_, err := txn.Get(key)
 		if err != nil {
-			return ErrNotFound
+			return translateError(err)
 		}
 
 		return txn.Set(key, val)
@@ -70,11 +71,11 @@ func (t *badgerTable) Update(id []byte, obj Object) error {
 
 func (t *badgerTable) Delete(id []byte) error {
 	key := t.getOpaqueKey(id)
-
+	fmt.Printf("DELETE %q\n", key)
 	return t.db.Update(func(txn *badger.Txn) error {
 		_, err := txn.Get(key)
 		if err != nil {
-			return ErrNotFound
+			return translateError(err)
 		}
 
 		return txn.Delete(key)
@@ -83,6 +84,7 @@ func (t *badgerTable) Delete(id []byte) error {
 
 func (t *badgerTable) Iter(start []byte, callback func(Object) error) error {
 	prefix := t.getOpaqueKey(start)
+	fmt.Printf("ITER %q\n", prefix)
 
 	return t.db.View(func(txn *badger.Txn) error {
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)

@@ -2,6 +2,7 @@ package kvdb
 
 import (
 	"errors"
+	"hash"
 
 	"github.com/dgraph-io/badger"
 )
@@ -22,10 +23,33 @@ type badgerDB struct {
 
 func (db *badgerDB) CreateTable(name string, obj Object) (Table, error) {
 	table, err := db.GetTable(name, obj)
+
 	//
 	// Any table initialization should happen here
 	//
+
 	return table, err
+}
+
+func (db *badgerDB) GetTableVersion(name string, obj ObjectVersion, hf func() hash.Hash) (TableVersion, error) {
+	if obj == nil {
+		return nil, errors.New("object cannot be nil")
+	}
+
+	table := &badgerTableVersion{
+		db:  db.db,
+		obj: obj.New(),
+		hf:  hf,
+	}
+
+	switch name {
+	case "", "/":
+		table.prefix = db.prefix
+	default:
+		table.prefix = db.prefix + name + "/"
+	}
+
+	return table, nil
 }
 
 func (db *badgerDB) GetTable(name string, obj Object) (Table, error) {
@@ -71,6 +95,7 @@ func (ds *badgerDatastore) GetDB(name string) DB {
 		db: ds.db,
 	}
 
+	// Ensure the prefix ends with a '/'
 	switch name {
 	case "", "/":
 		db.prefix = "/"
@@ -85,8 +110,17 @@ func (ds *badgerDatastore) GetDB(name string) DB {
 
 func (ds *badgerDatastore) CreateDB(name string) DB {
 	db := ds.GetDB(name)
+
 	//
 	// Any db initialization should happen here
 	//
+
 	return db
+}
+
+func translateError(err error) error {
+	if err == badger.ErrKeyNotFound {
+		return ErrNotFound
+	}
+	return err
 }
