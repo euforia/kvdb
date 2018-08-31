@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"log"
 	"net/url"
 
 	"github.com/opencontainers/go-digest"
@@ -75,7 +76,7 @@ type Datastore interface {
 
 // Open opens a datastore at the given url.  The url scheme must contain the backend
 // identifier as it is used to determine the driver to load e.g. badger:///path/to/db
-func Open(dburl string) (Datastore, error) {
+func Open(dburl string, logger *log.Logger) (Datastore, error) {
 	uri, _ := url.Parse(dburl)
 
 	switch uri.Scheme {

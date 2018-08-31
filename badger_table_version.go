@@ -43,8 +43,8 @@ func (t *badgerTableVersion) Create(id []byte, obj ObjectVersion) ([]byte, error
 		return err
 	})
 
-	fmt.Printf("CREATE VERSION %q\n", objKey)
-	fmt.Printf("CREATE VERSION %q\n", refKey)
+	fmt.Printf("CREATE-VERSION %q\n", objKey)
+	fmt.Printf("CREATE-VERSION %q\n", refKey)
 
 	return objID, err
 }
@@ -52,7 +52,7 @@ func (t *badgerTableVersion) Create(id []byte, obj ObjectVersion) ([]byte, error
 // Get returns the current object version of an object along with the hash id
 func (t *badgerTableVersion) Get(id []byte) (ObjectVersion, []byte, error) {
 	key := t.getRefKey(id)
-	fmt.Printf("READ VERSION %q\n", key)
+	fmt.Printf("READ-VERSION %q\n", key)
 	obj := t.obj.New()
 
 	var objID []byte
@@ -113,7 +113,7 @@ func (t *badgerTableVersion) Update(id []byte, obj ObjectVersion) ([]byte, error
 		return err
 	})
 
-	fmt.Printf("UPDATE VERSION %q\n", key)
+	fmt.Printf("UPDATE-VERSION %q\n", key)
 
 	return objID, err
 }
@@ -137,14 +137,14 @@ func (t *badgerTableVersion) Delete(id []byte) ([]byte, error) {
 
 		return txn.Delete(key)
 	})
-	fmt.Printf("DELETE VERSION %q\n", key)
+	fmt.Printf("DELETE-VERSION %q\n", key)
 
 	return objID, err
 }
 
 func (t *badgerTableVersion) IterRef(start []byte, callback func(h []byte) error) error {
 	prefix := t.getRefKey(start)
-	fmt.Printf("ITER REF %q\n", prefix)
+	fmt.Printf("ITER-REF %q\n", prefix)
 
 	return t.db.View(func(txn *badger.Txn) error {
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -168,7 +168,7 @@ func (t *badgerTableVersion) IterRef(start []byte, callback func(h []byte) error
 
 func (t *badgerTableVersion) Iter(start []byte, callback func(ObjectVersion) error) error {
 	prefix := t.getRefKey(start)
-	fmt.Printf("ITER VERSION %q\n", prefix)
+	fmt.Printf("ITER-VERSION %q\n", prefix)
 
 	return t.db.View(func(txn *badger.Txn) error {
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)
