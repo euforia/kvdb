@@ -3,6 +3,7 @@ package kvdb
 import (
 	"errors"
 	"hash"
+	"io"
 
 	"github.com/dgraph-io/badger"
 )
@@ -116,6 +117,15 @@ func (ds *badgerDatastore) CreateDB(name string) DB {
 	//
 
 	return db
+}
+
+// Backup writes a full db backup to the writer
+func (ds *badgerDatastore) Backup(w io.Writer) (uint64, error) {
+	return ds.db.Backup(w, 0)
+}
+
+func (ds *badgerDatastore) Restore(r io.Reader) error {
+	return ds.db.Load(r)
 }
 
 func translateError(err error) error {
