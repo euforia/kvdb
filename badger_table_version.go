@@ -2,8 +2,8 @@ package kvdb
 
 import (
 	"bytes"
-	"fmt"
 	"hash"
+	"log"
 
 	"github.com/dgraph-io/badger"
 )
@@ -14,6 +14,8 @@ type badgerTableVersion struct {
 	obj    ObjectVersion
 
 	hf func() hash.Hash
+
+	log *log.Logger
 }
 
 // Create creats an object by the id. It returns the object hash id or error
@@ -43,8 +45,7 @@ func (t *badgerTableVersion) Create(id []byte, obj ObjectVersion) ([]byte, error
 		return err
 	})
 
-	fmt.Printf("CREATE-VERSION %q\n", objKey)
-	fmt.Printf("CREATE-VERSION %q\n", refKey)
+	t.log.Printf("Create version ref=%s id=%q\n", refKey, objKey)
 
 	return objID, err
 }
@@ -52,7 +53,7 @@ func (t *badgerTableVersion) Create(id []byte, obj ObjectVersion) ([]byte, error
 // Get returns the current object version of an object along with the hash id
 func (t *badgerTableVersion) Get(id []byte) (ObjectVersion, []byte, error) {
 	key := t.getRefKey(id)
-	fmt.Printf("READ-VERSION %q\n", key)
+	t.log.Printf("Get version key=%q\n", key)
 	obj := t.obj.New()
 
 	var objID []byte
@@ -113,7 +114,7 @@ func (t *badgerTableVersion) Update(id []byte, obj ObjectVersion) ([]byte, error
 		return err
 	})
 
-	fmt.Printf("UPDATE-VERSION %q\n", key)
+	t.log.Printf("Update version key=%q\n", key)
 
 	return objID, err
 }
@@ -137,14 +138,14 @@ func (t *badgerTableVersion) Delete(id []byte) ([]byte, error) {
 
 		return txn.Delete(key)
 	})
-	fmt.Printf("DELETE-VERSION %q\n", key)
+	t.log.Printf("Delete version key=%q\n", key)
 
 	return objID, err
 }
 
 func (t *badgerTableVersion) IterRef(start []byte, callback func(h []byte) error) error {
 	prefix := t.getRefKey(start)
-	fmt.Printf("ITER-REF %q\n", prefix)
+	t.log.Printf("Iterate ref prefix=%q\n", prefix)
 
 	return t.db.View(func(txn *badger.Txn) error {
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -168,7 +169,7 @@ func (t *badgerTableVersion) IterRef(start []byte, callback func(h []byte) error
 
 func (t *badgerTableVersion) Iter(start []byte, callback func(ObjectVersion) error) error {
 	prefix := t.getRefKey(start)
-	fmt.Printf("ITER-VERSION %q\n", prefix)
+	t.log.Printf("Iterate version prefix=%q\n", prefix)
 
 	return t.db.View(func(txn *badger.Txn) error {
 		iter := txn.NewIterator(badger.DefaultIteratorOptions)

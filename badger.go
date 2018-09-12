@@ -4,6 +4,7 @@ import (
 	"errors"
 	"hash"
 	"io"
+	"log"
 
 	"github.com/dgraph-io/badger"
 )
@@ -20,6 +21,7 @@ func NewBadgerDB(datadir string) (*badger.DB, error) {
 type badgerDB struct {
 	prefix string
 	db     *badger.DB
+	log    *log.Logger
 }
 
 func (db *badgerDB) CreateTable(name string, obj Object) (Table, error) {
@@ -41,6 +43,7 @@ func (db *badgerDB) GetTableVersion(name string, obj ObjectVersion, hf func() ha
 		db:  db.db,
 		obj: obj.New(),
 		hf:  hf,
+		log: db.log,
 	}
 
 	switch name {
@@ -61,6 +64,7 @@ func (db *badgerDB) GetTable(name string, obj Object) (Table, error) {
 	table := &badgerTable{
 		db:  db.db,
 		obj: obj.New(),
+		log: db.log,
 	}
 
 	switch name {
@@ -74,26 +78,28 @@ func (db *badgerDB) GetTable(name string, obj Object) (Table, error) {
 }
 
 type badgerDatastore struct {
-	db *badger.DB
+	db  *badger.DB
+	log *log.Logger
 }
 
 // NewBadgerDatastore returns a badger backed datastore
-func NewBadgerDatastore(dir string) (Datastore, error) {
+func NewBadgerDatastore(dir string, logger *log.Logger) (Datastore, error) {
 	db, err := NewBadgerDB(dir)
 	if err == nil {
-		return NewBadgerDatastoreFromDB(db), nil
+		return NewBadgerDatastoreFromDB(db, logger), nil
 	}
 	return nil, err
 }
 
 // NewBadgerDatastoreFromDB returns a badger backed datastore
-func NewBadgerDatastoreFromDB(db *badger.DB) Datastore {
-	return &badgerDatastore{db}
+func NewBadgerDatastoreFromDB(db *badger.DB, logger *log.Logger) Datastore {
+	return &badgerDatastore{db, logger}
 }
 
 func (ds *badgerDatastore) GetDB(name string) DB {
 	db := &badgerDB{
-		db: ds.db,
+		db:  ds.db,
+		log: ds.log,
 	}
 
 	// Ensure the prefix ends with a '/'

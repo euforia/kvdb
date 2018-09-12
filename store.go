@@ -81,7 +81,7 @@ func Open(dburl string, logger *log.Logger) (Datastore, error) {
 
 	switch uri.Scheme {
 	case "badger":
-		return NewBadgerDatastore(uri.Path)
+		return NewBadgerDatastore(uri.Path, logger)
 
 	default:
 		return nil, fmt.Errorf("backend not supported: '%s'", uri.Scheme)

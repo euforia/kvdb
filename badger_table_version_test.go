@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"hash"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"testing"
@@ -106,7 +107,8 @@ func Test_TableVersion(t *testing.T) {
 	tdir, _ := ioutil.TempDir("/tmp", "thrap-store-")
 	defer os.RemoveAll(tdir)
 
-	ds, err := Open("badger://" + tdir)
+	logger := log.New(os.Stderr, "", log.LstdFlags|log.Lmicroseconds)
+	ds, err := Open("badger://"+tdir, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
